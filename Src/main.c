@@ -16,8 +16,11 @@
 #include <sys_tick.h>
 
 #define BAUD_RATE 115200
-// Enable UART2 RX interrupt by uncommenting UART2_RX_INTERRUPT_ENABLE
+// Uncomment UART2_RX_INTERRUPT_ENABLE : Enable UART2 RX interrupt
 //#define UART2_RX_INTERRUPT_ENABLE
+
+// Uncomment TIMESTAMP_ENABLE : Enable UART2 RX interrupt
+//#define SYSTICK_TIMESTAMP_ENABLE
 
 static void gpio_function_handler();
 
@@ -82,6 +85,9 @@ static void gpio_function_handler()
   // Set PC13 config
   gpio_init(&gpio_config);
   gpio_enable_irq(&gpio_config, RISING_EDGE, EXTI15_10_IRQn);
+#if defined(SYSTICK_TIMESTAMP_ENABLE)
+  systick_start();
+#endif
 
   /* Loop forever */
   for(;;)
@@ -99,7 +105,11 @@ void EXTI15_10_IRQHandler()
   {
     //This bit is cleared by programming it to ‘1’
     EXTI->PR |= (1u<<13);
+#if defined(SYSTICK_TIMESTAMP_ENABLE)
+    printf("%d: Button pressed, toggling LED\r\n", get_time_lapsed());
+#else
     printf("Button pressed, toggling LED\r\n");
+#endif
     //Toggle LED state
     gpio_toggle(PORT_A, 5);
   }

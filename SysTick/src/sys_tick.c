@@ -18,6 +18,9 @@
 #define STK_CTRL_COUNT_FLAG (1u<<16)
 #define STK_CTRL_CLK_SOURCE (1u<<2)
 #define STK_CTRL_ENABLE     (1u)
+#define STK_CTRL_TICK       (1u<<1) //Enable counting down to zero to asserts the SysTick exception request.
+
+uint32_t time_logged_ms = 0;
 
 void systick_delay_ms(uint32_t ms)
 {
@@ -39,6 +42,34 @@ void systick_delay_ms(uint32_t ms)
   }
   // Disable systick
   SysTick->CTRL &= ~STK_CTRL_ENABLE;
+}
+
+void systick_start()
+{
+  uint32_t index;
+
+  // Ensure 24 bit value
+  SysTick->LOAD = SYSTICK_RELOAD_VALUE & 0xFFFFFF;
+
+  // Set Clock to Processor clock
+  SysTick->CTRL |= STK_CTRL_CLK_SOURCE;
+  // Enable systick
+  SysTick->CTRL |= STK_CTRL_ENABLE;
+  // Enable counting down to zero to asserts the SysTick exception request.
+  SysTick->CTRL |= STK_CTRL_TICK;
+}
+
+void SysTick_Handler()
+{
+  if(SysTick->CTRL &  STK_CTRL_COUNT_FLAG)
+  {
+    time_logged_ms++;
+  }
+}
+
+uint32_t get_time_lapsed()
+{
+  return time_logged_ms;
 }
 
 
