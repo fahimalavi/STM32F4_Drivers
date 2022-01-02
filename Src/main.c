@@ -4,6 +4,10 @@
  *
  *  Created on: 31 Dec 2021
  *      Author: fahim
+ *
+ * Copyright (c) 2021-2022.
+ * SPDX-License-Identifier: Apache-2.0
+ *
  */
 #include <stdio.h>
 #include "stm32f4xx.h"
@@ -12,23 +16,37 @@
 #include <sys_tick.h>
 
 #define BAUD_RATE 115200
+// Enable UART2 RX interrupt by uncommenting UART2_RX_INTERRUPT_ENABLE
+//#define UART2_RX_INTERRUPT_ENABLE
 
 static void gpio_function_handler();
 
+#if defined(UART2_RX_INTERRUPT_ENABLE)
+uint8_t uart_data = 0;
+#endif //UART2_RX_INTERRUPT_ENABLE
+
 int main(void)
 {
-  uart2_config_init(BAUD_RATE);
+#if defined(UART2_RX_INTERRUPT_ENABLE)
+  // RX Interrupt Enable
+  uart2_config_init(BAUD_RATE, true);
+#else //
+  uart2_config_init(BAUD_RATE, false);
+#endif //UART2_RX_INTERRUPT_ENABLE
 
   printf("Welcome to baremetal program, press Enter to start\r\n");
 
-  // Enter
-  while(uart2_read() != 0x0A)
-  {
-    printf("Try again!\r\n");
-  }
-  printf("Enter pressed, waiting 5 seconds\r\n");
-  systick_delay_ms(5000);
-  printf("5 seconds over, press switch button to turn off user LED\r\n");
+  // Wait for Enter
+#if defined(UART2_RX_INTERRUPT_ENABLE)
+  while(uart_data != 0x0A) {}
+  printf("Enter pressed, read from interrupt waiting 2 seconds\r\n");
+#else //
+  while(uart2_read() != 0x0A) {}
+  printf("Enter pressed, waiting 2 seconds\r\n");
+#endif //UART2_RX_INTERRUPT_ENABLE
+
+  systick_delay_ms(2000);
+  printf("2 seconds over, press switch button to toggle user LED\r\n");
 
   gpio_function_handler();
 }
@@ -63,12 +81,36 @@ static void gpio_function_handler()
   gpio_config.config = CONFIG_GPIO_MODE_PRESENT;
   // Set PC13 config
   gpio_init(&gpio_config);
+  gpio_enable_irq(&gpio_config, RISING_EDGE, EXTI15_10_IRQn);
 
   /* Loop forever */
   for(;;)
   {
-    gpio_write(PORT_A, 5, GPIO_VALUE_HIGH);
-    while(gpio_read(PORT_C, 13) == GPIO_VALUE_LOW)
-      gpio_write(PORT_A, 5, GPIO_VALUE_LOW);
+//    gpio_write(PORT_A, 5, GPIO_VALUE_HIGH);
+//    while(gpio_read(PORT_C, 13) == GPIO_VALUE_LOW)
+//      gpio_write(PORT_A, 5, GPIO_VALUE_LOW);
   }
 }
+
+void EXTI15_10_IRQHandler()
+{
+  // selected trigger request occurred on PC13
+  if(EXTI->PR & (1u<<13))
+  {
+    //This bit is cleared by programming it to ‘1’
+    EXTI->PR |= (1u<<13);
+    printf("Button pressed, toggling LED\r\n");
+    //Toggle LED state
+    gpio_toggle(PORT_A, 5);
+  }
+}
+
+#if defined(UART2_RX_INTERRUPT_ENABLE)
+void USART2_IRQHandler()
+{
+  if(USART2->SR & (1u<<5))
+  {
+    uart_data = (USART2->DR & 0xFF);
+  }
+}
+#endif //UART2_RX_INTERRUPT_ENABLE

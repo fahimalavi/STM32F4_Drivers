@@ -3,6 +3,9 @@
  *
  *  Created on: 29 Dec 2021
  *      Author: fahim
+ *
+ * Copyright (c) 2021-2022.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdint.h>
@@ -122,6 +125,82 @@ void gpio_init(tGPIO_Config *gpio_config)
   }
 }
 
+void gpio_enable_irq(tGPIO_Config *gpio_config, eGPIO_trigger_select trigger, int16_t interrupt_number)
+{
+  // Disable global IRQ
+  __disable_irq();
+
+  // Enable SYSCFG Clock
+  RCC->APB2ENR |= (1u<<14);
+
+  switch(gpio_config->port)
+  {
+  case PORT_A:
+    // Set SYSCFG external interrupt configuration register PAx
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] &= ~(1u<<((gpio_config->gpio_pin & 0b11)*4+0));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] &= ~(1u<<((gpio_config->gpio_pin & 0b11)*4+1));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] &= ~(1u<<((gpio_config->gpio_pin & 0b11)*4+2));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] &= ~(1u<<((gpio_config->gpio_pin & 0b11)*4+3));
+    break;
+  case PORT_B:
+    // Set SYSCFG external interrupt configuration register PBx
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] |= (1u<<((gpio_config->gpio_pin & 0b11)*4+0));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] &= ~(1u<<((gpio_config->gpio_pin & 0b11)*4+1));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] &= ~(1u<<((gpio_config->gpio_pin & 0b11)*4+2));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] &= ~(1u<<((gpio_config->gpio_pin & 0b11)*4+3));
+    break;
+  case PORT_C:
+    // Set SYSCFG external interrupt configuration register PCx
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] &= ~(1u<<((gpio_config->gpio_pin & 0b11)*4+0));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] |= (1u<<((gpio_config->gpio_pin & 0b11)*4+1));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] &= ~(1u<<((gpio_config->gpio_pin & 0b11)*4+2));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] &= ~(1u<<((gpio_config->gpio_pin & 0b11)*4+3));
+    break;
+  case PORT_D:
+    // Set SYSCFG external interrupt configuration register PDx
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] |= (1u<<((gpio_config->gpio_pin & 0b11)*4+0));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] |= (1u<<((gpio_config->gpio_pin & 0b11)*4+1));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] &= ~(1u<<((gpio_config->gpio_pin & 0b11)*4+2));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] &= ~(1u<<((gpio_config->gpio_pin & 0b11)*4+3));
+    break;
+  case PORT_E:
+    // Set SYSCFG external interrupt configuration register PEx
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] &= ~(1u<<((gpio_config->gpio_pin & 0b11)*4+0));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] &= ~(1u<<((gpio_config->gpio_pin & 0b11)*4+1));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] |= (1u<<((gpio_config->gpio_pin & 0b11)*4+2));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] &= ~(1u<<((gpio_config->gpio_pin & 0b11)*4+3));
+    break;
+  case PORT_H:
+    // Set SYSCFG external interrupt configuration register PHx
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] |= (1u<<((gpio_config->gpio_pin & 0b11)*4+0));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] |= (1u<<((gpio_config->gpio_pin & 0b11)*4+1));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] |= (1u<<((gpio_config->gpio_pin & 0b11)*4+2));
+    SYSCFG->EXTICR[(gpio_config->gpio_pin >> 2)] &= ~(1u<<((gpio_config->gpio_pin & 0b11)*4+3));
+    break;
+  }
+
+  // Interrupt request from line x is not masked
+  EXTI->IMR |= (1u<<gpio_config->gpio_pin);
+
+  switch(trigger)
+  {
+  case FALLING_EDGE:
+    //Falling trigger enabled (for Event and Interrupt) for input line.
+    EXTI->FTSR |= (1u<<gpio_config->gpio_pin);
+    break;
+  case RISING_EDGE:
+    //Rising trigger enabled (for Event and Interrupt) for input line.
+    EXTI->RTSR |= (1u<<gpio_config->gpio_pin);
+    break;
+  }
+
+  // Argument is STM32 specific interrupt number
+  NVIC_EnableIRQ(interrupt_number);
+
+  // Enable Global interrupts -> Remember NVIC_EnableIRQ is different
+  __enable_irq();
+}
+
 void gpio_write(eGPIO_PORT port, uint8_t gpio_pin, eGPIO_Value value)
 {
   GPIO_TypeDef *GPIOx = get_memory_location(port);
@@ -133,6 +212,13 @@ void gpio_write(eGPIO_PORT port, uint8_t gpio_pin, eGPIO_Value value)
   {
     GPIOx->BSRR |= (1u<<gpio_pin);
   }
+}
+
+void gpio_toggle(eGPIO_PORT port, uint8_t gpio_pin)
+{
+  GPIO_TypeDef *GPIOx = get_memory_location(port);
+
+  GPIOx->ODR ^= (1u<<(gpio_pin));
 }
 
 eGPIO_Value gpio_read(eGPIO_PORT port, uint8_t gpio_pin)

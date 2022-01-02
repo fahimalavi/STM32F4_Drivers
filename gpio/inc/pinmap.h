@@ -3,12 +3,16 @@
  *
  *  Created on: 29 Dec 2021
  *      Author: fahim
+ *
+ * Copyright (c) 2021-2022.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef INC_PINMAP_H_
 #define INC_PINMAP_H_
 // NULL may create redefinition warning with stdio
 #define NULL          ( (void *) 0)
+typedef enum {false, true} bool;
 #define GPIO_NUMBER   16U
 
 // Standardized LED and button names
@@ -88,6 +92,11 @@ typedef struct {
 
 }tGPIO_Config;
 
+typedef enum {
+  FALLING_EDGE,
+  RISING_EDGE,
+
+}eGPIO_trigger_select;
 //typedef enum {
 //    ALT0  = 0x100,
 //} ALTx;

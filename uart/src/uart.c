@@ -3,6 +3,9 @@
  *
  *  Created on: 31 Dec 2021
  *      Author: fahim
+ *
+ * Copyright (c) 2021-2022.
+ * SPDX-License-Identifier: Apache-2.0
  */
 #include <stdint.h>
 #include "gpio.h"
@@ -10,7 +13,7 @@
 #include "uart.h"
 
 
-void uart2_config_init(uint32_t baudrate)
+void uart2_config_init(uint32_t baudrate, bool enable_rx_interrupt)
 {
   tGPIO_Config gpio_config;
 
@@ -51,6 +54,13 @@ void uart2_config_init(uint32_t baudrate)
 
   // Enable RX
   USART2->CR1 |= (1u<<2);
+
+  // rx interrupt Enable
+  if(enable_rx_interrupt)
+  {
+    USART2->CR1 |= (1u<<5);
+    NVIC_EnableIRQ(USART2_IRQn);
+  }
 
   // Enable UART
   USART2->CR1 |= (1u<<13);
