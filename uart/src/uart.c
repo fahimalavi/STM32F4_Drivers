@@ -13,7 +13,7 @@
 #include "uart.h"
 
 
-void uart2_config_init(uint32_t baudrate, bool enable_rx_interrupt)
+void uart2_config_init(uint32_t baudrate, bool enable_interrupt)
 {
   tGPIO_Config gpio_config;
 
@@ -56,9 +56,10 @@ void uart2_config_init(uint32_t baudrate, bool enable_rx_interrupt)
   USART2->CR1 |= (1u<<2);
 
   // rx interrupt Enable
-  if(enable_rx_interrupt)
+  if(enable_interrupt)
   {
     USART2->CR1 |= (1u<<5);
+    USART2->CR1 |= (1u<<6); // Transmission complete interrupt enable
     NVIC_EnableIRQ(USART2_IRQn);
   }
 
