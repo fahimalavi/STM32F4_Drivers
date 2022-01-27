@@ -17,14 +17,15 @@
 #include "dma_config.h" // If you want to move to specific peripheral
 
 #define BAUD_RATE 115200
-#define TEST_DATA1_SIZE 11
-#define TEST_DATA2_SIZE 3386
+#define TEST_DATA1_SIZE 12
+#define TEST_DATA2_SIZE 3387
+#define TEST_DATA3_SIZE 14
 
-
-char test_data1[TEST_DATA1_SIZE] = "0123456789";
-char test_data2[TEST_DATA2_SIZE] = "vitae, posuere at, velit. Cras lorem lorem, luctus ut, pellentesque eget, dictum placerat, augue. Sed molestie. Sed id risus quis diam luctus lobortis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Mauris ut quam vel sapien imperdiet ornare. In faucibus. Morbi vehicula. Pellentesque tincidunt tempus risus. Donec egestas. Duis ac arcu. Nunc mauris. Morbi non sapien molestie orci tincidunt adipiscing. Mauris molestie pharetra nibh. Aliquam ornare, libero at auctor ullamcorper, nisl arcu iaculis enim, sit amet ornare lectus justo eu arcu. Morbi sit amet massa. Quisque porttitor eros nec tellus. Nunc lectus pede, ultrices a, auctor non, feugiat nec, diam. Duis mi enim, condimentum eget, volutpat ornare, facilisis eget, ipsum. Donec sollicitudin adipiscing ligula. Aenean gravida nunc sed pede. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Proin vel arcu eu odio tristique pharetra. Quisque ac libero nec ligula consectetuer rhoncus. Nullam velit dui, semper et, lacinia vitae, sodales at, velit. Pellentesque ultricies dignissim lacus. Aliquam rutrum lorem ac risus. Morbi metus. Vivamus euismod urna. Nullam lobortis quam a felis ullamcorper viverra. Maecenas iaculis aliquet diam. Sed diam lorem, auctor quis, tristique ac, eleifend vitae, erat. Vivamus nisi. Mauris nulla. Integer urna. Vivamus molestie dapibus ligula. Aliquam erat volutpat. Nulla dignissim. Maecenas ornare egestas ligula. Nullam feugiat placerat velit. Quisque varius. Nam porttitor scelerisque neque. Nullam nisl. Maecenas malesuada fringilla est. Mauris eu turpis. Nulla aliquet. Proin velit. Sed malesuada augue ut lacus. Nulla tincidunt, neque vitae semper egestas, urna justo faucibus lectus, a sollicitudin orci sem eget massa. Suspendisse eleifend. Cras sed leo. Cras vehicula aliquet libero. Integer in magna. Phasellus dolor elit, pellentesque a, facilisis non, bibendum sed, est. Nunc laoreet lectus quis massa. Mauris vestibulum, neque sed dictum eleifend, nunc risus varius orci, in consequat enim diam vel arcu. Curabitur ut odio vel est tempor bibendum. Donec felis orci, adipiscing non, luctus sit amet, faucibus ut, nulla. Cras eu tellus eu augue porttitor interdum. Sed auctor odio a purus. Duis elementum, dui quis accumsan convallis, ante lectus convallis est, vitae sodales nisi magna sed dui. Fusce aliquam, enim nec tempus scelerisque, lorem ipsum sodales purus, in molestie tortor nibh sit amet orci. Ut sagittis lobortis mauris. Suspendisse aliquet molestie tellus. Aenean egestas hendrerit neque. In ornare sagittis felis. Donec tempor, est ac mattis semper, dui lectus rutrum urna, nec luctus felis purus ac tellus. Suspendisse sed dolor. Fusce mi lorem, vehicula et, rutrum eu, ultrices sit amet, risus. Donec nibh enim, gravida sit amet, dapibus id, blandit at, nisi. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Proin vel nisl. Quisque fringilla euismod enim. Etiam gravida molestie arcu. Sed eu nibh vulputate mauris sagittis placerat. Cras dictum ultricies ligula. Nullam enim. Sed nulla ante, iaculis nec, eleifend non, dapibus rutrum, justo. Praesent luctus. Curabitur egestas nunc sed libero. Proin sed turpis nec mauris blandit mattis. Cras eget nisi dictum augue malesuada malesuada. Integer id magna et ipsum cursus vestibulum. Mauris magna.";
+char test_data1[TEST_DATA1_SIZE] = "0123456789\r\n";
+char test_data2[TEST_DATA2_SIZE] = "vitae, posuere at, velit. Cras lorem lorem, luctus ut, pellentesque eget, dictum placerat, augue. Sed molestie. Sed id risus quis diam luctus lobortis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Mauris ut quam vel sapien imperdiet ornare. In faucibus. Morbi vehicula. Pellentesque tincidunt tempus risus. Donec egestas. Duis ac arcu. Nunc mauris. Morbi non sapien molestie orci tincidunt adipiscing. Mauris molestie pharetra nibh. Aliquam ornare, libero at auctor ullamcorper, nisl arcu iaculis enim, sit amet ornare lectus justo eu arcu. Morbi sit amet massa. Quisque porttitor eros nec tellus. Nunc lectus pede, ultrices a, auctor non, feugiat nec, diam. Duis mi enim, condimentum eget, volutpat ornare, facilisis eget, ipsum. Donec sollicitudin adipiscing ligula. Aenean gravida nunc sed pede. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Proin vel arcu eu odio tristique pharetra. Quisque ac libero nec ligula consectetuer rhoncus. Nullam velit dui, semper et, lacinia vitae, sodales at, velit. Pellentesque ultricies dignissim lacus. Aliquam rutrum lorem ac risus. Morbi metus. Vivamus euismod urna. Nullam lobortis quam a felis ullamcorper viverra. Maecenas iaculis aliquet diam. Sed diam lorem, auctor quis, tristique ac, eleifend vitae, erat. Vivamus nisi. Mauris nulla. Integer urna. Vivamus molestie dapibus ligula. Aliquam erat volutpat. Nulla dignissim. Maecenas ornare egestas ligula. Nullam feugiat placerat velit. Quisque varius. Nam porttitor scelerisque neque. Nullam nisl. Maecenas malesuada fringilla est. Mauris eu turpis. Nulla aliquet. Proin velit. Sed malesuada augue ut lacus. Nulla tincidunt, neque vitae semper egestas, urna justo faucibus lectus, a sollicitudin orci sem eget massa. Suspendisse eleifend. Cras sed leo. Cras vehicula aliquet libero. Integer in magna. Phasellus dolor elit, pellentesque a, facilisis non, bibendum sed, est. Nunc laoreet lectus quis massa. Mauris vestibulum, neque sed dictum eleifend, nunc risus varius orci, in consequat enim diam vel arcu. Curabitur ut odio vel est tempor bibendum. Donec felis orci, adipiscing non, luctus sit amet, faucibus ut, nulla. Cras eu tellus eu augue porttitor interdum. Sed auctor odio a purus. Duis elementum, dui quis accumsan convallis, ante lectus convallis est, vitae sodales nisi magna sed dui. Fusce aliquam, enim nec tempus scelerisque, lorem ipsum sodales purus, in molestie tortor nibh sit amet orci. Ut sagittis lobortis mauris. Suspendisse aliquet molestie tellus. Aenean egestas hendrerit neque. In ornare sagittis felis. Donec tempor, est ac mattis semper, dui lectus rutrum urna, nec luctus felis purus ac tellus. Suspendisse sed dolor. Fusce mi lorem, vehicula et, rutrum eu, ultrices sit amet, risus. Donec nibh enim, gravida sit amet, dapibus id, blandit at, nisi. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Proin vel nisl. Quisque fringilla euismod enim. Etiam gravida molestie arcu. Sed eu nibh vulputate mauris sagittis placerat. Cras dictum ultricies ligula. Nullam enim. Sed nulla ante, iaculis nec, eleifend non, dapibus rutrum, justo. Praesent luctus. Curabitur egestas nunc sed libero. Proin sed turpis nec mauris blandit mattis. Cras eget nisi dictum augue malesuada malesuada. Integer id magna et ipsum cursus vestibulum. Mauris magna.\r\n";
+char test_data3[TEST_DATA3_SIZE] = "Toggling LED\r\n";
 // Uncomment UART2_INTERRUPT_ENABLE : Enable UART2 RX interrupt
-#define UART2_INTERRUPT_ENABLE
+//#define UART2_INTERRUPT_ENABLE
 
 // Uncomment SYSTICK_TIMESTAMP_ENABLE : Enable UART2 RX interrupt
 //#define SYSTICK_TIMESTAMP_ENABLE
@@ -32,9 +33,6 @@ char test_data2[TEST_DATA2_SIZE] = "vitae, posuere at, velit. Cras lorem lorem, 
 // Uncomment CONFIGURE_DMA_UART2 : Enable DMA on UART2
 #define CONFIGURE_DMA_UART2
 
-#if defined(CONFIGURE_DMA_UART2)
-#define UART2_INTERRUPT_ENABLE
-#endif
 
 void gpio_function_handler();
 void program_sequence();
@@ -54,9 +52,9 @@ int main(void)
 {
 #if defined(UART2_INTERRUPT_ENABLE)
   // RX Interrupt Enable
-  uart2_config_init(BAUD_RATE, true);
+  uart2_config_init(BAUD_RATE, TRUE);
 #else //
-  uart2_config_init(BAUD_RATE, false);
+  uart2_config_init(BAUD_RATE, FALSE);
 #endif //UART2_INTERRUPT_ENABLE
 
 #if defined (CONFIGURE_DMA_UART2)
@@ -90,6 +88,8 @@ void data_communication_DMA()
 {
   tGPIO_Config gpio_config;
   int i;
+  DMA_UART_Handle_t handle;
+
   printf("Data TX transferring after LED \r\n");
 
   // Look in block diagram what Bus is connected to GPIO port
@@ -111,23 +111,43 @@ void data_communication_DMA()
   // Set PA5 config
   gpio_init(&gpio_config);
 
+  dma_uart2_init(&handle);
+  dma_uart2_send(&handle, (uint32_t)test_data1, TEST_DATA1_SIZE);
+
   for(i = 0; i < 10 ; i++)
   {
     systick_delay_ms(500);
     gpio_toggle(PORT_A, 5);
   }
 
-  dma_uart2_init((uint32_t)&(USART2->DR), (uint32_t)test_data1, TEST_DATA1_SIZE, DMA1_Stream6_IRQn);
-
   while(wait_print == 0)
   {
     systick_delay_ms(1000);
     gpio_toggle(PORT_A, 5);
   }
-  dma_uart2_init((uint32_t)&(USART2->DR), (uint32_t)test_data2, TEST_DATA2_SIZE, DMA1_Stream6_IRQn);
+#if defined(CONFIGURE_DMA_UART2)
+  //FFS
+  if(wait_print & 4)
+  {
+    printf("DMA Error occured \r\n");
+  }
+
+  if(wait_print & 1)
+  {
+    printf("DMA UART TC interrupt \r\n");
+  }
+
+  if(wait_print & 2)
+  {
+    printf("UART TC interrupt \r\n");
+  }
+#endif
+
+  dma_uart2_send(&handle, (uint32_t)test_data2, TEST_DATA2_SIZE);
   for(;;)
   {
     systick_delay_ms(2000);
+    dma_uart2_send(&handle, (uint32_t)test_data3, TEST_DATA3_SIZE);
     gpio_toggle(PORT_A, 5);
   }
 }
@@ -204,6 +224,9 @@ void USART2_IRQHandler()
   }
   if(USART2->SR & (1u<<6))
   {
+#if defined(CONFIGURE_DMA_UART2)
+    wait_print |= 0b10;
+#endif
     // The TC bit can also be cleared by writing a '0' to it.
     USART2->SR &= ~(1u<<6);
   }
@@ -216,11 +239,13 @@ void DMA1_Stream6_IRQHandler()
   if(DMA1->HISR & (1u<<21))
   {
 #if defined(CONFIGURE_DMA_UART2)
-    wait_print = 1;
+    wait_print |= 0b01;
 #endif
     DMA1->HIFCR |= (1u<<21);
   }
-
+#if defined(CONFIGURE_DMA_UART2)
+  // FFS
   if (DMA1->HISR & 0x000C0000)    /* if an error occurred */
-      wait_print = 2;
+      wait_print = 0b100;
+#endif
 }

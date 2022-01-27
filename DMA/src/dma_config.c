@@ -6,6 +6,9 @@
  */
 #include <stdint.h>
 #include <stdio.h>
+#ifndef INC_PINMAP_H_
+#include "pinmap.h"
+#endif
 #include "dma_config.h"
 #include "stm32f4xx.h"
 
@@ -22,9 +25,24 @@
 
 #define USART2_DMAT       (1u<<7) //DMA enable transmitter
 
-void dma_uart2_init(uint32_t peripheral_data_register_addr, uint32_t mem_addr, uint16_t size, int32_t interrupt_number)
+#define set_uart2_handle() (dma_uart2_handle++)
+#define clear_uart2_handle() (dma_uart2_handle = NULL)
+#define get_uart2_handle() (dma_uart2_handle)
+
+static DMA_UART_Handle_t dma_uart2_handle = 0;
+
+bool dma_uart2_init(DMA_UART_Handle_t *handle)
 {
+  uint32_t peripheral_data_register_addr = (uint32_t)&(USART2->DR);
+
   printf("dma_uart2_init called\r\n");
+
+  // DMA handle in use
+  if(get_uart2_handle() != 0)
+  {
+    printf("dma_uart2_init: DMA UART2 already configured\r\n");
+    return FALSE;
+  }
   // Disable global IRQ
   //__disable_irq();
 
@@ -54,14 +72,6 @@ void dma_uart2_init(uint32_t peripheral_data_register_addr, uint32_t mem_addr, u
   // Set the peripheral port register address in the DMA_SxPAR register (Stream6)
   DMA1_Stream6->PAR = peripheral_data_register_addr;
 
-  // Set the memory address in the DMA_SxMA0R register
-  DMA1_Stream6->M0AR = mem_addr;
-
-  // Configure the total number of data items to be transferred in the DMA_SxNDTR register.
-  //    Number of data items to be transferred (0 up to 65535). This register can be written only
-  //    When the stream is enabled, this register is read-only, indicating the remaining data items to be transmitted.
-  DMA1_Stream6->NDTR = size;
-
   // Select the DMA channel in the DMA_SxCR register. (Select Channel 4, may be later generalize)
   DMA1_Stream6->CR |= (1u<<27);
   DMA1_Stream6->CR &= ~(1u<<26);
@@ -81,19 +91,69 @@ void dma_uart2_init(uint32_t peripheral_data_register_addr, uint32_t mem_addr, u
   DMA1_Stream6->CR |= DMA_STREAMx_MINC;
 
   // Configure interrupts after half and/or full transfer, and/or errors in the DMA_SxCR register
-  DMA1_Stream6->CR |= DMA_STREAMx_TCIE; // Unsure if Interrupt handler in STM32F401RE
+  // FFS : Put interrupt in specific DMA handle
+  DMA1_Stream6->CR |= DMA_STREAMx_TCIE;
 
   // Argument is STM32 specific interrupt number
-  NVIC_EnableIRQ(interrupt_number);
-
-  // Activate the stream by setting the EN bit in the DMA_SxCR register.
-  DMA1_Stream6->CR |= DMA_STREAMx_EN;
+  NVIC_EnableIRQ(DMA1_Stream6_IRQn);
 
   // Enable UART2 transmitter
   USART2->CR3 |= USART2_DMAT;
 
   printf("dma_uart2_init : Activated the stream6\r\n");
 
+  set_uart2_handle();
+
+  *handle = get_uart2_handle();
+
+  return TRUE;
+
   // Enable Global interrupts -> Remember NVIC_EnableIRQ is different
   //__enable_irq();
+}
+
+bool dma_uart2_send(DMA_UART_Handle_t *handle, uint32_t mem_addr, uint16_t size)
+{
+  // DMA handle in use
+  if(get_uart2_handle() == 0)
+  {
+    printf("dma_uart2_init: DMA UART2 not configured or invalid handle\r\n");
+    return FALSE;
+  }
+  // Disable stream by resetting the EN bit in the DMA_SxCR register (RM: DMA1 request mapping)
+  DMA1_Stream6->CR &= ~DMA_STREAMx_EN;
+
+  while((DMA1_Stream6->CR & DMA_STREAMx_EN) != 0)
+  {
+
+  }
+
+  // Disable interrupt flags of Stream6 (UART_TX)
+  DMA1->HIFCR |= (1u<<16);
+  DMA1->HIFCR |= (1u<<18);
+  DMA1->HIFCR |= (1u<<19);
+  DMA1->HIFCR |= (1u<<20);
+  DMA1->HIFCR |= (1u<<21);
+
+  DMA1_Stream6->CR &= ~DMA_STREAMx_DMEIE;
+  DMA1_Stream6->CR &= ~DMA_STREAMx_TEIE;
+  DMA1_Stream6->CR &= ~DMA_STREAMx_HTIE;
+  DMA1_Stream6->CR &= ~DMA_STREAMx_TCIE;
+
+  // Set the memory address in the DMA_SxMA0R register
+  DMA1_Stream6->M0AR = mem_addr;
+
+  // Configure the total number of data items to be transferred in the DMA_SxNDTR register.
+  //    Number of data items to be transferred (0 up to 65535). This register can be written only
+  //    When the stream is enabled, this register is read-only, indicating the remaining data items to be transmitted.
+  DMA1_Stream6->NDTR = size;
+
+  // Configure interrupts after half and/or full transfer, and/or errors in the DMA_SxCR register
+  // FFS : Put interrupt in specific DMA handle
+  DMA1_Stream6->CR |= DMA_STREAMx_TCIE;
+
+  // Activate the stream by setting the EN bit in the DMA_SxCR register.
+  DMA1_Stream6->CR |= DMA_STREAMx_EN;
+
+  return TRUE;
 }

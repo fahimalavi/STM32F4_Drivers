@@ -8,6 +8,8 @@
 #ifndef INC_DMA_CONFIG_H_
 #define INC_DMA_CONFIG_H_
 
+typedef uint8_t DMA_UART_Handle_t;
+
   /*
   The following sequence should be followed to configure a DMA stream x (where x is the
   stream number):
@@ -38,6 +40,7 @@
   DMA_SxCR register.
   10. Activate the stream by setting the EN bit in the DMA_SxCR register.
   */
-void dma_uart2_init(uint32_t peripheral_data_register_addr, uint32_t mem_addr, uint16_t size, int32_t interrupt_number);
+bool dma_uart2_init(DMA_UART_Handle_t *handle);
+bool dma_uart2_send(DMA_UART_Handle_t *handle, uint32_t mem_addr, uint16_t size);
 
 #endif /* INC_DMA_CONFIG_H_ */

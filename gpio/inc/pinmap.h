@@ -12,7 +12,7 @@
 #define INC_PINMAP_H_
 // NULL may create redefinition warning with stdio
 #define NULL          ( (void *) 0)
-typedef enum {false, true} bool;
+typedef enum {FALSE, TRUE} bool;
 #define GPIO_NUMBER   16U
 
 // Standardized LED and button names
