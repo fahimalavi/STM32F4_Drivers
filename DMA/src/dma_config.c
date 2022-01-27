@@ -46,10 +46,10 @@ void dma_uart2_init(uint32_t peripheral_data_register_addr, uint32_t mem_addr, u
   DMA1->HIFCR |= (1u<<20);
   DMA1->HIFCR |= (1u<<21);
 
-//  DMA1_Stream6->CR &= ~DMA_STREAMx_DMEIE;
-//  DMA1_Stream6->CR &= ~DMA_STREAMx_TEIE;
-//  DMA1_Stream6->CR &= ~DMA_STREAMx_HTIE;
-//  DMA1_Stream6->CR &= ~DMA_STREAMx_TCIE;
+  DMA1_Stream6->CR &= ~DMA_STREAMx_DMEIE;
+  DMA1_Stream6->CR &= ~DMA_STREAMx_TEIE;
+  DMA1_Stream6->CR &= ~DMA_STREAMx_HTIE;
+  DMA1_Stream6->CR &= ~DMA_STREAMx_TCIE;
 
   // Set the peripheral port register address in the DMA_SxPAR register (Stream6)
   DMA1_Stream6->PAR = peripheral_data_register_addr;
@@ -83,20 +83,14 @@ void dma_uart2_init(uint32_t peripheral_data_register_addr, uint32_t mem_addr, u
   // Configure interrupts after half and/or full transfer, and/or errors in the DMA_SxCR register
   DMA1_Stream6->CR |= DMA_STREAMx_TCIE; // Unsure if Interrupt handler in STM32F401RE
 
-  printf("dma_uart2_init : config complete\r\n");
-
   // Argument is STM32 specific interrupt number
-  NVIC_EnableIRQ(DMA1_Stream6_IRQn);
-
-  printf("dma_uart2_init : NVIC_EnableIRQ success\r\n");
-
-  // Enable UART2 transmitter
-  USART2->CR3 |= USART2_DMAT;
-
-  printf("dma_uart2_init : Enabled UART2 transmitter\r\n");
+  NVIC_EnableIRQ(interrupt_number);
 
   // Activate the stream by setting the EN bit in the DMA_SxCR register.
   DMA1_Stream6->CR |= DMA_STREAMx_EN;
+
+  // Enable UART2 transmitter
+  USART2->CR3 |= USART2_DMAT;
 
   printf("dma_uart2_init : Activated the stream6\r\n");
 
