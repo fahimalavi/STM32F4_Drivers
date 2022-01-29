@@ -16,10 +16,16 @@
 #include <sys_tick.h>
 #include "dma_config.h" // If you want to move to specific peripheral
 
+// todo : https://community.st.com/s/article/FAQ-DMA-is-not-working-on-STM32H7-devices
+
 #define BAUD_RATE 115200
 #define TEST_DATA1_SIZE 12
 #define TEST_DATA2_SIZE 3387
 #define TEST_DATA3_SIZE 14
+
+#define RX_DATA_BUFFER_SIZE 512
+uint16_t data_size = 0;
+uint8_t data[RX_DATA_BUFFER_SIZE]={0};
 
 char test_data1[TEST_DATA1_SIZE] = "0123456789\r\n";
 char test_data2[TEST_DATA2_SIZE] = "vitae, posuere at, velit. Cras lorem lorem, luctus ut, pellentesque eget, dictum placerat, augue. Sed molestie. Sed id risus quis diam luctus lobortis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Mauris ut quam vel sapien imperdiet ornare. In faucibus. Morbi vehicula. Pellentesque tincidunt tempus risus. Donec egestas. Duis ac arcu. Nunc mauris. Morbi non sapien molestie orci tincidunt adipiscing. Mauris molestie pharetra nibh. Aliquam ornare, libero at auctor ullamcorper, nisl arcu iaculis enim, sit amet ornare lectus justo eu arcu. Morbi sit amet massa. Quisque porttitor eros nec tellus. Nunc lectus pede, ultrices a, auctor non, feugiat nec, diam. Duis mi enim, condimentum eget, volutpat ornare, facilisis eget, ipsum. Donec sollicitudin adipiscing ligula. Aenean gravida nunc sed pede. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Proin vel arcu eu odio tristique pharetra. Quisque ac libero nec ligula consectetuer rhoncus. Nullam velit dui, semper et, lacinia vitae, sodales at, velit. Pellentesque ultricies dignissim lacus. Aliquam rutrum lorem ac risus. Morbi metus. Vivamus euismod urna. Nullam lobortis quam a felis ullamcorper viverra. Maecenas iaculis aliquet diam. Sed diam lorem, auctor quis, tristique ac, eleifend vitae, erat. Vivamus nisi. Mauris nulla. Integer urna. Vivamus molestie dapibus ligula. Aliquam erat volutpat. Nulla dignissim. Maecenas ornare egestas ligula. Nullam feugiat placerat velit. Quisque varius. Nam porttitor scelerisque neque. Nullam nisl. Maecenas malesuada fringilla est. Mauris eu turpis. Nulla aliquet. Proin velit. Sed malesuada augue ut lacus. Nulla tincidunt, neque vitae semper egestas, urna justo faucibus lectus, a sollicitudin orci sem eget massa. Suspendisse eleifend. Cras sed leo. Cras vehicula aliquet libero. Integer in magna. Phasellus dolor elit, pellentesque a, facilisis non, bibendum sed, est. Nunc laoreet lectus quis massa. Mauris vestibulum, neque sed dictum eleifend, nunc risus varius orci, in consequat enim diam vel arcu. Curabitur ut odio vel est tempor bibendum. Donec felis orci, adipiscing non, luctus sit amet, faucibus ut, nulla. Cras eu tellus eu augue porttitor interdum. Sed auctor odio a purus. Duis elementum, dui quis accumsan convallis, ante lectus convallis est, vitae sodales nisi magna sed dui. Fusce aliquam, enim nec tempus scelerisque, lorem ipsum sodales purus, in molestie tortor nibh sit amet orci. Ut sagittis lobortis mauris. Suspendisse aliquet molestie tellus. Aenean egestas hendrerit neque. In ornare sagittis felis. Donec tempor, est ac mattis semper, dui lectus rutrum urna, nec luctus felis purus ac tellus. Suspendisse sed dolor. Fusce mi lorem, vehicula et, rutrum eu, ultrices sit amet, risus. Donec nibh enim, gravida sit amet, dapibus id, blandit at, nisi. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Proin vel nisl. Quisque fringilla euismod enim. Etiam gravida molestie arcu. Sed eu nibh vulputate mauris sagittis placerat. Cras dictum ultricies ligula. Nullam enim. Sed nulla ante, iaculis nec, eleifend non, dapibus rutrum, justo. Praesent luctus. Curabitur egestas nunc sed libero. Proin sed turpis nec mauris blandit mattis. Cras eget nisi dictum augue malesuada malesuada. Integer id magna et ipsum cursus vestibulum. Mauris magna.\r\n";
@@ -33,16 +39,16 @@ char test_data3[TEST_DATA3_SIZE] = "Toggling LED\r\n";
 // Uncomment CONFIGURE_DMA_UART2 : Enable DMA on UART2
 #define CONFIGURE_DMA_UART2
 
-
 void gpio_function_handler();
 void program_sequence();
 
+
 #if defined(CONFIGURE_DMA_UART2)
 uint8_t wait_print = 0;
+volatile uint8_t data_rxd = 0;
 void data_communication_DMA();
+void receive_dma_uart2_data(DMA_UART_Handle_t *handle);
 #endif
-
-
 
 #if defined(UART2_INTERRUPT_ENABLE)
 uint8_t uart_data = 0;
@@ -87,7 +93,7 @@ void program_sequence()
 void data_communication_DMA()
 {
   tGPIO_Config gpio_config;
-  int i;
+  uint8_t i;
   DMA_UART_Handle_t handle;
 
   printf("Data TX transferring after LED \r\n");
@@ -114,17 +120,12 @@ void data_communication_DMA()
   dma_uart2_init(&handle);
   dma_uart2_send(&handle, (uint32_t)test_data1, TEST_DATA1_SIZE);
 
-  for(i = 0; i < 10 ; i++)
+  for(i = 0; i < 50 ; i++)
   {
-    systick_delay_ms(500);
+    systick_delay_ms(100);
     gpio_toggle(PORT_A, 5);
   }
 
-  while(wait_print == 0)
-  {
-    systick_delay_ms(1000);
-    gpio_toggle(PORT_A, 5);
-  }
 #if defined(CONFIGURE_DMA_UART2)
   //FFS
   if(wait_print & 4)
@@ -144,12 +145,46 @@ void data_communication_DMA()
 #endif
 
   dma_uart2_send(&handle, (uint32_t)test_data2, TEST_DATA2_SIZE);
+
+  // Check if uart receive data 3 times
+  receive_dma_uart2_data(&handle);
+  receive_dma_uart2_data(&handle);
+  receive_dma_uart2_data(&handle);
+
   for(;;)
   {
     systick_delay_ms(2000);
     dma_uart2_send(&handle, (uint32_t)test_data3, TEST_DATA3_SIZE);
     gpio_toggle(PORT_A, 5);
   }
+}
+
+void receive_dma_uart2_data(DMA_UART_Handle_t *handle)
+{
+  uint16_t i;
+
+  data_rxd = 0;
+
+  printf("Send data on UART upto %d bytes\r\n", RX_DATA_BUFFER_SIZE);
+
+  dma_uart2_receive(handle, (uint32_t)data, RX_DATA_BUFFER_SIZE);
+
+  while(data_rxd == 0)
+  {
+    printf("Data not received, sleeping 1 second\r\n");
+    systick_delay_ms(1000);
+  }
+  printf("Data received data_size:%d, data_rxd:%d\r\n", data_size, data_rxd);
+
+  if(data_rxd == 0xFF)
+  {
+    printf("ERROR occurred\r\n");
+  }
+  for(i=0; i<data_size && data_size <= RX_DATA_BUFFER_SIZE;i++)
+  {
+    printf("%d:%c\t",i,(char)data[i]);
+  }
+  printf("\r\n");
 }
 #endif
 
@@ -214,13 +249,15 @@ void EXTI15_10_IRQHandler()
   }
 }
 
-#if defined(UART2_INTERRUPT_ENABLE)
+
 void USART2_IRQHandler()
 {
   if(USART2->SR & (1u<<5))
   {
+#if defined(UART2_INTERRUPT_ENABLE)
     //It is cleared by a read to the USART_DR register. The RXNE flag can also be cleared by writing a zero to it.
     uart_data = (USART2->DR & 0xFF);
+#endif //UART2_INTERRUPT_ENABLE
   }
   if(USART2->SR & (1u<<6))
   {
@@ -230,8 +267,19 @@ void USART2_IRQHandler()
     // The TC bit can also be cleared by writing a '0' to it.
     USART2->SR &= ~(1u<<6);
   }
+  // Idle interrupt
+  if(USART2->SR & (1u<<4))
+  {
+    // It is cleared by a software sequence (an read to the USART_SR register followed by a read to the USART_DR register).
+    // Note: The IDLE bit will not be set again until the RXNE bit has been set itself
+    USART2->DR;
+
+    USART2->CR1 &= ~(1u<<4);
+    DMA1_Stream5->CR &= ~(1u);
+
+    data_size = RX_DATA_BUFFER_SIZE - DMA1_Stream5->NDTR;
+  }
 }
-#endif //UART2_INTERRUPT_ENABLE
 
 void DMA1_Stream6_IRQHandler()
 {
@@ -248,4 +296,36 @@ void DMA1_Stream6_IRQHandler()
   if (DMA1->HISR & 0x000C0000)    /* if an error occurred */
       wait_print = 0b100;
 #endif
+}
+
+void DMA1_Stream5_IRQHandler()
+{
+  //Stream x HTIF5 (Half transfer)
+  if(DMA1->HISR & (1u<<10))
+  {
+#if defined(CONFIGURE_DMA_UART2)
+    data_rxd |= 2;
+#endif
+    DMA1->HIFCR |= (1u<<10);
+  }
+
+  //Stream x TCIF5 (Full transfer)
+  if(DMA1->HISR & (1u<<11))
+  {
+#if defined(CONFIGURE_DMA_UART2)
+    data_rxd |= 1;
+#endif
+    // It is cleared by software writing 1 to the corresponding bit in the DMA_HIFCR register.
+    DMA1->HIFCR |= (1u<<11);
+  }
+#if defined(CONFIGURE_DMA_UART2)
+  // FFS
+  if (DMA1->HISR & 0x00000300)    /* if an error occurred */
+  {
+    data_rxd = 0xFF;
+    DMA1->HIFCR |= (1u<<8);
+    DMA1->HIFCR |= (1u<<9);
+  }
+#endif
+  //DMA1_Stream5->CR &= ~(1u);
 }
