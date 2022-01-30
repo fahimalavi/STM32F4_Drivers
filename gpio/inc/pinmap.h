@@ -11,7 +11,9 @@
 #ifndef INC_PINMAP_H_
 #define INC_PINMAP_H_
 // NULL may create redefinition warning with stdio
+#ifndef NULL
 #define NULL          ( (void *) 0)
+#endif
 typedef enum {FALSE, TRUE} bool;
 #define GPIO_NUMBER   16U
 

@@ -23,6 +23,14 @@
 #define DMA_STREAMx_MINC  (1u<<10) //Memory increment mode
 #define DMA_STREAMx_DMDIS (1u<<2) //Direct mode disable DMA_SxFCR : This bit is protected and can be written only if EN is ‘0’. & not allowed in Mem 2 Mem
 
+//#define DMA_HIFCR_CDMEIF5 (1u<<8) //
+//#define DMA_HIFCR_CTEIF5  (1u<<9) //
+//#define DMA_HIFCR_CHTIF5 (1u<<10) // Stream 5 clear half transfer interrupt flag
+//#define DMA_HIFCR_CTCIF5 (1u<<11) // Stream 5 clear transfer complete interrupt flag
+//#define DMA_HIFCR_CTCIF6 (1u<<21) // Stream 6 clear transfer complete interrupt flag
+//#define DMA_HISR_HTIF5 DMA_HIFCR_CHTIF5 // Stream 5 half transfer interrupt flag. This bit is set by hardware. It is cleared by software writing 1 to the corresponding bit in the DMA_HIFCR register.
+//#define DMA_HISR_TCIF5 DMA_HIFCR_CTCIF5 // Stream x transfer complete interrupt flag
+
 #define USART_DMAT       (1u<<7) //DMA enable transmitter
 #define USART_DMAR       (1u<<6) //DMA enable Receiver
 #define USART_IDLEIE     (1u<<4) // USART enable IDLE interrupt
@@ -186,7 +194,7 @@ static bool dma_uart2_rx_stream_init(uint32_t peripheral_data_register_addr)
   return TRUE;
 }
 
-bool dma_uart2_send(DMA_UART_Handle_t *handle, uint32_t mem_addr, uint16_t size)
+bool dma_uart2_send(DMA_UART_Handle_t *handle, uint8_t *mem_addr, uint16_t size)
 {
   // DMA handle in use
   if(get_uart2_handle() == 0)
@@ -214,7 +222,7 @@ bool dma_uart2_send(DMA_UART_Handle_t *handle, uint32_t mem_addr, uint16_t size)
   DMA1_Stream6->CR &= ~DMA_STREAMx_TCIE;
 
   // Set the memory address in the DMA_SxMA0R register
-  DMA1_Stream6->M0AR = mem_addr;
+  DMA1_Stream6->M0AR = (uint32_t) mem_addr;
 
   // Configure the total number of data items to be transferred in the DMA_SxNDTR register.
   //    Number of data items to be transferred (0 up to 65535). This register can be written only
@@ -231,7 +239,7 @@ bool dma_uart2_send(DMA_UART_Handle_t *handle, uint32_t mem_addr, uint16_t size)
   return TRUE;
 }
 
-bool dma_uart2_receive(DMA_UART_Handle_t *handle, uint32_t mem_addr, uint16_t size)
+bool dma_uart2_receive(DMA_UART_Handle_t *handle, uint8_t *mem_addr, uint16_t size)
 {
   NVIC_DisableIRQ(USART2_IRQn);
 
@@ -260,7 +268,7 @@ bool dma_uart2_receive(DMA_UART_Handle_t *handle, uint32_t mem_addr, uint16_t si
   DMA1_Stream5->CR &= ~DMA_STREAMx_TCIE;
 
   // Set the memory address in the DMA_SxMA0R register
-  DMA1_Stream5->M0AR = mem_addr;
+  DMA1_Stream5->M0AR = (uint32_t)mem_addr;
 
   // Configure the total number of data items to be transferred in the DMA_SxNDTR register.
   //    Number of data items to be transferred (0 up to 65535). This register can be written only

@@ -45,17 +45,17 @@ bool dma_uart2_init(DMA_UART_Handle_t *handle);
 /*
  * Function name : dma_uart2_send
  * Description : Non-blocking call to send data on UART
- * Arguments : DMA_UART_Handle_t * , uint32_t address of data to sent and uint16_t size of data to sent
+ * Arguments : DMA_UART_Handle_t * , uint8_t* address of data to sent and uint16_t size of data to sent
  * Return : TRUE if successful else FALSE
  */
-bool dma_uart2_send(DMA_UART_Handle_t *handle, uint32_t mem_addr, uint16_t size);
+bool dma_uart2_send(DMA_UART_Handle_t *handle, uint8_t *mem_addr, uint16_t size);
 
 /*
  * Function name : dma_uart2_receive
  * Description : Non-blocking call to receive data on UART
- * Arguments : DMA_UART_Handle_t * , uint32_t Memory Address and uint16_t size of buffer
+ * Arguments : DMA_UART_Handle_t * , uint8_t* Memory Address and uint16_t size of buffer
  * Return : TRUE if successful else FALSE
  */
-bool dma_uart2_receive(DMA_UART_Handle_t *handle, uint32_t mem_addr, uint16_t size);
+bool dma_uart2_receive(DMA_UART_Handle_t *handle, uint8_t *mem_addr, uint16_t size);
 
 #endif /* INC_DMA_CONFIG_H_ */
